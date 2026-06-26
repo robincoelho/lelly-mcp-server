@@ -15,7 +15,7 @@ console.error(`[Lelly MCP] Inicializando para o USER_ID: ${USER_ID}`);
 const server = new Server(
   {
     name: "lelly-mcp-server",
-    version: "1.0.0",
+    version: "1.1.0",
   },
   {
     capabilities: {
@@ -273,6 +273,142 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ["title", "body"]
         }
+      },
+
+      // === NOVO: FINANÇAS PESSOAIS ===
+      {
+        name: "list_finance_accounts",
+        description: "Lista as contas financeiras cadastradas (Ex: banco, carteira, poupança) com seus saldos.",
+        inputSchema: { type: "object", properties: {} }
+      },
+      {
+        name: "list_finance_categories",
+        description: "Lista as categorias de receitas e despesas do organizador financeiro.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            type: { type: "string", enum: ["income", "expense", "transfer"], description: "Filtrar tipo de categoria." }
+          }
+        }
+      },
+      {
+        name: "list_transactions",
+        description: "Lista as transações financeiras recentes (gastos, ganhos e transferências).",
+        inputSchema: {
+          type: "object",
+          properties: {
+            account_id: { type: "number", description: "ID opcional da conta para filtrar as transações." },
+            limit: { type: "number", default: 30, description: "Limite de registros a retornar." }
+          }
+        }
+      },
+      {
+        name: "create_transaction",
+        description: "Registra um novo ganho (income), gasto (expense) ou transferência de valor, atualizando o saldo da conta associada.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            account_id: { type: "number", description: "ID da conta de origem/destino." },
+            category_id: { type: "number", description: "ID opcional da categoria do lançamento." },
+            type: { type: "string", enum: ["income", "expense", "transfer"], description: "Tipo da transação." },
+            amount: { type: "number", description: "Valor financeiro da transação." },
+            description: { type: "string", description: "Breve descrição do lançamento." },
+            transaction_date: { type: "string", description: "Data do lançamento opcional (formato YYYY-MM-DD). Padrão é hoje." },
+            transfer_account_id: { type: "number", description: "ID da conta de destino (apenas para transferências)." }
+          },
+          required: ["account_id", "type", "amount", "description"]
+        }
+      },
+      {
+        name: "get_finance_summary",
+        description: "Retorna o saldo total de todas as contas ativas e o totalizador de despesas/receitas.",
+        inputSchema: { type: "object", properties: {} }
+      },
+
+      // === NOVO: VIDA ESPIRITUAL ===
+      {
+        name: "list_devotionals",
+        description: "Lista as reflexões diárias e devocionais registradas.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            limit: { type: "number", default: 10 }
+          }
+        }
+      },
+      {
+        name: "create_devotional",
+        description: "Registra uma nova reflexão devocional diária.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            bible_verse: { type: "string", description: "Livro, capítulo e versículo (Ex: Salmos 23:1)." },
+            verse_text: { type: "string", description: "Texto sagrado lido." },
+            reflection: { type: "string", description: "Pensamentos e reflexões sobre a leitura." },
+            application: { type: "string", description: "Como aplicar o aprendizado na rotina diária." },
+            date: { type: "string", description: "Data opcional (YYYY-MM-DD). Padrão é hoje." }
+          },
+          required: ["bible_verse", "reflection"]
+        }
+      },
+      {
+        name: "list_prayers",
+        description: "Lista os pedidos de oração ativos ou respondidos.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            status: { type: "string", enum: ["active", "answered", "archived"], default: "active" }
+          }
+        }
+      },
+      {
+        name: "create_prayer_request",
+        description: "Adiciona um novo pedido de oração.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            request: { type: "string", description: "Descrição do pedido de oração." },
+            category: { type: "string", description: "Categoria do pedido (Ex: Saúde, Família, Trabalho)." }
+          },
+          required: ["request"]
+        }
+      },
+      {
+        name: "answer_prayer",
+        description: "Marca um pedido de oração como respondido e registra as notas de agradecimento/resposta.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            prayer_id: { type: "number", description: "ID do pedido de oração." },
+            answer_notes: { type: "string", description: "Notas sobre a bênção ou resposta recebida." }
+          },
+          required: ["prayer_id", "answer_notes"]
+        }
+      },
+      {
+        name: "list_spiritual_journal",
+        description: "Lista as anotações do diário espiritual pessoal.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            limit: { type: "number", default: 10 }
+          }
+        }
+      },
+      {
+        name: "create_journal_entry",
+        description: "Adiciona uma nova página ao diário espiritual.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            title: { type: "string", description: "Título opcional da anotação." },
+            content: { type: "string", description: "Texto principal do diário." },
+            mood: { type: "string", description: "Estado espiritual ou emocional (Ex: Grato, Ansioso, Feliz)." },
+            tags: { type: "string", description: "Tags separadas por vírgula." },
+            date: { type: "string", description: "Data (YYYY-MM-DD). Padrão é hoje." }
+          },
+          required: ["content"]
+        }
       }
     ]
   };
@@ -316,7 +452,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case "create_task": {
-        // Valida propriedade da lista
         const [listOwner] = await db.query("SELECT id FROM lists WHERE id = ? AND user_id = ?", [args.list_id, USER_ID]);
         if (listOwner.length === 0) {
           throw new Error(`Lista ID ${args.list_id} não pertence ao usuário.`);
@@ -331,7 +466,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case "toggle_task": {
-        // Valida propriedade da tarefa
         const [taskOwner] = await db.query(
           "SELECT li.id, li.is_done FROM list_items li JOIN lists l ON li.list_id = l.id WHERE li.id = ? AND l.user_id = ?",
           [args.task_id, USER_ID]
@@ -349,7 +483,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case "delete_task": {
-        // Valida propriedade da tarefa
         const [taskOwner] = await db.query(
           "SELECT li.id FROM list_items li JOIN lists l ON li.list_id = l.id WHERE li.id = ? AND l.user_id = ?",
           [args.task_id, USER_ID]
@@ -556,6 +689,188 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           [USER_ID, args.title, args.body, tags]
         );
         return { content: [{ type: "text", text: `Artigo/Nota '${args.title}' adicionada com sucesso à Base de Conhecimento! ID: ${result.insertId}` }] };
+      }
+
+      // === NOVO: FINANÇAS PESSOAIS ===
+      case "list_finance_accounts": {
+        const [rows] = await db.query(
+          "SELECT id, name, type, balance, currency, bank_name, account_number, is_active FROM finance_accounts WHERE user_id = ?",
+          [USER_ID]
+        );
+        return { content: [{ type: "text", text: JSON.stringify(rows, null, 2) }] };
+      }
+
+      case "list_finance_categories": {
+        let query = "SELECT id, name, type, color, icon, is_system FROM finance_categories WHERE user_id = ? OR is_system = 1";
+        const params = [USER_ID];
+
+        if (args.type) {
+          query += " AND type = ?";
+          params.push(args.type);
+        }
+
+        const [rows] = await db.query(query, params);
+        return { content: [{ type: "text", text: JSON.stringify(rows, null, 2) }] };
+      }
+
+      case "list_transactions": {
+        let query = "SELECT t.id, t.account_id, a.name as account_name, t.category_id, c.name as category_name, t.type, t.amount, t.currency, t.description, t.transaction_date, t.payment_method, t.tags FROM finance_transactions t JOIN finance_accounts a ON t.account_id = a.id LEFT JOIN finance_categories c ON t.category_id = c.id WHERE t.user_id = ?";
+        const params = [USER_ID];
+
+        if (args.account_id) {
+          query += " AND t.account_id = ?";
+          params.push(args.account_id);
+        }
+
+        query += " ORDER BY t.transaction_date DESC, t.id DESC LIMIT ?";
+        params.push(args.limit || 30);
+
+        const [rows] = await db.query(query, params);
+        return { content: [{ type: "text", text: JSON.stringify(rows, null, 2) }] };
+      }
+
+      case "create_transaction": {
+        // Valida se a conta pertence ao usuário
+        const [accOwner] = await db.query("SELECT id, balance FROM finance_accounts WHERE id = ? AND user_id = ?", [args.account_id, USER_ID]);
+        if (accOwner.length === 0) {
+          throw new Error(`Conta ID ${args.account_id} não encontrada ou não pertence a este usuário.`);
+        }
+
+        const date = args.transaction_date || getTodayDateString();
+        const catId = args.category_id || null;
+        const transferAccId = args.transfer_account_id || null;
+
+        // Inicia transação segura do banco de dados
+        const connection = await db.getConnection();
+        try {
+          await connection.beginTransaction();
+
+          // Insere a transação
+          const [insertRes] = await connection.query(
+            "INSERT INTO finance_transactions (user_id, account_id, category_id, type, amount, description, transaction_date, transfer_account_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            [USER_ID, args.account_id, catId, args.type, args.amount, args.description, date, transferAccId]
+          );
+
+          // Atualiza saldo da conta principal
+          let balanceDiff = 0;
+          if (args.type === "income") {
+            balanceDiff = args.amount;
+          } else if (args.type === "expense" || args.type === "transfer") {
+            balanceDiff = -args.amount;
+          }
+          await connection.query("UPDATE finance_accounts SET balance = balance + ? WHERE id = ?", [balanceDiff, args.account_id]);
+
+          // Lógica adicional caso seja transferência
+          if (args.type === "transfer" && transferAccId) {
+            const [destOwner] = await connection.query("SELECT id FROM finance_accounts WHERE id = ? AND user_id = ?", [transferAccId, USER_ID]);
+            if (destOwner.length > 0) {
+              // Atualiza o saldo da conta de destino
+              await connection.query("UPDATE finance_accounts SET balance = balance + ? WHERE id = ?", [args.amount, transferAccId]);
+            }
+          }
+
+          await connection.commit();
+          return { content: [{ type: "text", text: `Transação criada com sucesso! ID: ${insertRes.insertId}. Saldo da conta ajustado.` }] };
+        } catch (err) {
+          await connection.rollback();
+          throw err;
+        } finally {
+          connection.release();
+        }
+      }
+
+      case "get_finance_summary": {
+        const [accounts] = await db.query(
+          "SELECT SUM(balance) as total_balance FROM finance_accounts WHERE user_id = ? AND is_active = 1",
+          [USER_ID]
+        );
+        const [incomes] = await db.query(
+          "SELECT SUM(amount) as total_income FROM finance_transactions WHERE user_id = ? AND type = 'income'",
+          [USER_ID]
+        );
+        const [expenses] = await db.query(
+          "SELECT SUM(amount) as total_expense FROM finance_transactions WHERE user_id = ? AND type = 'expense'",
+          [USER_ID]
+        );
+
+        const summary = {
+          total_active_balance: accounts[0]?.total_balance || 0,
+          total_income_history: incomes[0]?.total_income || 0,
+          total_expense_history: expenses[0]?.total_expense || 0,
+          net_balance: (incomes[0]?.total_income || 0) - (expenses[0]?.total_expense || 0)
+        };
+        return { content: [{ type: "text", text: JSON.stringify(summary, null, 2) }] };
+      }
+
+      // === VIDA ESPIRITUAL ===
+      case "list_devotionals": {
+        const [rows] = await db.query(
+          "SELECT id, dev_date, bible_verse, verse_text, reflection, application FROM devotionals WHERE user_id = ? ORDER BY dev_date DESC, id DESC LIMIT ?",
+          [USER_ID, args.limit || 10]
+        );
+        return { content: [{ type: "text", text: JSON.stringify(rows, null, 2) }] };
+      }
+
+      case "create_devotional": {
+        const date = args.date || getTodayDateString();
+        const verseText = args.verse_text || null;
+        const app = args.application || null;
+
+        const [result] = await db.query(
+          "INSERT INTO devotionals (user_id, dev_date, bible_verse, verse_text, reflection, application) VALUES (?, ?, ?, ?, ?, ?)",
+          [USER_ID, date, args.bible_verse, verseText, args.reflection, app]
+        );
+        return { content: [{ type: "text", text: `Devocional registrado com sucesso para a data ${date}! ID: ${result.insertId}` }] };
+      }
+
+      case "list_prayers": {
+        const [rows] = await db.query(
+          "SELECT id, request, category, status, answer_notes, answered_at, created_at FROM prayer_requests WHERE user_id = ? AND status = ? ORDER BY created_at DESC",
+          [USER_ID, args.status || "active"]
+        );
+        return { content: [{ type: "text", text: JSON.stringify(rows, null, 2) }] };
+      }
+
+      case "create_prayer_request": {
+        const cat = args.category || "Geral";
+        const [result] = await db.query(
+          "INSERT INTO prayer_requests (user_id, request, category, status) VALUES (?, ?, ?, 'active')",
+          [USER_ID, args.request, cat]
+        );
+        return { content: [{ type: "text", text: `Pedido de oração adicionado com sucesso! ID: ${result.insertId}` }] };
+      }
+
+      case "answer_prayer": {
+        const answeredAt = getTodayDateString() + " " + new Date().toTimeString().split(" ")[0];
+        const [result] = await db.query(
+          "UPDATE prayer_requests SET status = 'answered', answer_notes = ?, answered_at = ? WHERE id = ? AND user_id = ?",
+          [args.answer_notes, answeredAt, args.prayer_id, USER_ID]
+        );
+        if (result.affectedRows === 0) {
+          throw new Error(`Pedido de oração ID ${args.prayer_id} não encontrado ou não pertence a este usuário.`);
+        }
+        return { content: [{ type: "text", text: `Glória a Deus! Pedido de oração ID ${args.prayer_id} marcado como respondido.` }] };
+      }
+
+      case "list_spiritual_journal": {
+        const [rows] = await db.query(
+          "SELECT id, entry_date, title, content, mood, tags FROM spiritual_journal WHERE user_id = ? ORDER BY entry_date DESC, id DESC LIMIT ?",
+          [USER_ID, args.limit || 10]
+        );
+        return { content: [{ type: "text", text: JSON.stringify(rows, null, 2) }] };
+      }
+
+      case "create_journal_entry": {
+        const date = args.date || getTodayDateString();
+        const title = args.title || null;
+        const mood = args.mood || null;
+        const tags = args.tags || null;
+
+        const [result] = await db.query(
+          "INSERT INTO spiritual_journal (user_id, entry_date, title, content, mood, tags) VALUES (?, ?, ?, ?, ?, ?)",
+          [USER_ID, date, title, args.content, mood, tags]
+        );
+        return { content: [{ type: "text", text: `Página do diário espiritual salva com sucesso para ${date}! ID: ${result.insertId}` }] };
       }
 
       default:

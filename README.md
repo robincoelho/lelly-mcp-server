@@ -2,7 +2,7 @@
 
 **Lelly MCP Server** is the official implementation of the [Model Context Protocol (MCP)](https://modelcontextprotocol.io) built to connect the **Lelly.chat** workspace with AI agents and coding tools (such as Claude Code, Claude Desktop, Cursor, and more).
 
-This integration empowers your AI assistants to interact directly with your tasks, scheduled reminders (delivered via WhatsApp, Email, Site, or Chat), health tracking journals (water, calories, exercise, sleep), CRM pipeline, and personalized knowledge base — bringing your organizational workspace straight to your terminal and code editor.
+This integration empowers your AI assistants to interact directly with your tasks, scheduled reminders (delivered via WhatsApp, Email, Site, or Chat), health tracking journals (water, calories, exercise, sleep), CRM pipeline, personal finance ledger, spiritual devotionals, and personalized knowledge base — bringing your organizational workspace straight to your terminal and code editor.
 
 ---
 
@@ -38,6 +38,22 @@ The MCP server exposes a rich set of database-driven tools for your AI agents:
 ### 5. Knowledge Base (`Knowledge Base`)
 * **`search_knowledge`**: Search through articles or notes stored in your Lelly Knowledge Base.
 * **`add_knowledge_item`**: Save a new article, note, or code snippet with a title, body, and custom tags.
+
+### 6. Personal Finance Ledger (`Finance`)
+* **`list_finance_accounts`**: List active accounts (banks, wallets, investments) with their respective balances.
+* **`list_finance_categories`**: Fetch your category list for budgeting (income, expense, transfer).
+* **`list_transactions`**: Retrieve recent transactions, optionally filtered by account.
+* **`create_transaction`**: Record a new transaction (income, expense, or transfer) and automatically adjust the associated account balances within a database transaction.
+* **`get_finance_summary`**: Get a quick financial summary including total active balance, historical incomes/expenses, and net cash flow.
+
+### 7. Spiritual Journal & Devotionals (`Spiritual Life`)
+* **`list_devotionals`**: Fetch recent scripture reflections and devocionais log.
+* **`create_devotional`**: Log a new devotional page (bible verse, verse text, reflection, and life application).
+* **`list_prayers`**: Retrieve active, answered, or archived prayer requests.
+* **`create_prayer_request`**: Record a new prayer request with an optional category.
+* **`answer_prayer`**: Mark a prayer request as answered and record notes of thanks.
+* **`list_spiritual_journal`**: Fetch spiritual diary notes.
+* **`create_journal_entry`**: Add an entry page to your spiritual journal with emotional/spiritual mood states and tags.
 
 ---
 
