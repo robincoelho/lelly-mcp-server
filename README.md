@@ -1,97 +1,97 @@
 # Lelly MCP Server 🚀
 
-O **Lelly MCP Server** é uma implementação oficial do [Model Context Protocol (MCP)](https://modelcontextprotocol.io) desenvolvida para conectar a plataforma **Lelly.chat** a agentes de inteligência artificial de terminal ou editores de código (como Claude Code, Claude Desktop, Cursor, Copilot, etc.).
+**Lelly MCP Server** is the official implementation of the [Model Context Protocol (MCP)](https://modelcontextprotocol.io) built to connect the **Lelly.chat** workspace with AI agents and coding tools (such as Claude Code, Claude Desktop, Cursor, and more).
 
-Com este servidor MCP, seu agente de IA pode gerenciar diretamente pelo terminal as suas listas de tarefas, programar lembretes (via WhatsApp, Email, Site ou Chat), pesquisar e alimentar a sua base de conhecimento de notas pessoais, registrar logs de diário de saúde (calorias, água, exercícios, sono) e gerenciar leads e clientes no CRM comercial.
-
----
-
-## 🛠️ Funcionalidades e Ferramentas Expostas
-
-O servidor MCP expõe as seguintes ferramentas utilitárias:
-
-### 1. Organizador de Tarefas (`Tasks & Lists`)
-* **`list_tasks_lists`**: Lista todas as pastas/listas de tarefas criadas.
-* **`list_tasks`**: Exibe todas as tarefas (com status concluída/pendente, pomodoros planejados/completados e data limite), com filtro por lista.
-* **`create_task_list`**: Cria uma nova lista/pasta organizadora.
-* **`create_task`**: Adiciona uma nova tarefa dentro de uma lista com data de entrega opcional.
-* **`toggle_task`**: Conclui ou reabre uma tarefa pendente.
-* **`delete_task`**: Exclui permanentemente uma tarefa.
-
-### 2. Agendamento de Lembretes (`Reminders`)
-* **`list_reminders`**: Retorna todos os lembretes do usuário, com opção de filtrar por status (`pending`/`sent`).
-* **`create_reminder`**: Agenda um novo lembrete com opção de escolher múltiplos canais de aviso (WhatsApp, E-mail, Alerta no Site e Alerta no Chat).
-* **`delete_reminder`**: Cancela e exclui um lembrete agendado.
-
-### 3. Diário de Saúde (`Health & Wellness`)
-* **`get_health_log`**: Obtém o histórico completo de saúde de um determinado dia (calorias, água, sono, peso, exercícios realizados e refeições cadastradas).
-* **`log_water`**: Adiciona consumo de água (ml) para o dia especificado.
-* **`log_calories`**: Adiciona consumo calórico (kcal) para o dia especificado.
-* **`log_meal`**: Cadastra uma refeição com descrição, calorias e horário (café da manhã, almoço, jantar, etc.).
-* **`log_exercise`**: Cadastra um exercício físico com duração, intensidade, calorias queimadas e notas.
-* **`update_health_log`**: Modifica métricas gerais como horas de sono, peso, humor e anotações do dia.
-
-### 4. CRM Comercial (`Leads & Customers`)
-* **`list_crm_customers`**: Lista clientes e leads cadastrados no CRM do Lelly com filtro de status.
-* **`create_crm_customer`**: Cadastra um novo lead ou cliente com nome, e-mail, telefone, empresa e anotações comerciais.
-
-### 5. Base de Conhecimento (`Knowledge Base`)
-* **`search_knowledge`**: Pesquisa anotações ou artigos salvos na Base de Conhecimento do usuário.
-* **`add_knowledge_item`**: Salva uma nova anotação ou artigo detalhado com título, corpo e tags personalizadas.
+This integration empowers your AI assistants to interact directly with your tasks, scheduled reminders (delivered via WhatsApp, Email, Site, or Chat), health tracking journals (water, calories, exercise, sleep), CRM pipeline, and personalized knowledge base — bringing your organizational workspace straight to your terminal and code editor.
 
 ---
 
-## ⚙️ Instalação e Configuração
+## 🛠️ Exposed Tools & Features
 
-### 1. Pré-requisitos
-* Node.js (versão 18 ou superior) instalado localmente.
+The MCP server exposes a rich set of database-driven tools for your AI agents:
 
-### 2. Configurando o Ambiente
-Clone o repositório e crie um arquivo `.env` na raiz do projeto com as credenciais do banco de dados MySQL da sua instalação do Lelly:
+### 1. Task Organizer (`Tasks & Lists`)
+* **`list_tasks_lists`**: Fetch all task lists/folders in your Lelly organizer.
+* **`list_tasks`**: Retrieve list items (includes task content, status, planned/completed Pomodoros, and due dates), with optional list filtering.
+* **`create_task_list`**: Create a new task list/folder.
+* **`create_task`**: Add a new task to a specific list with an optional due date.
+* **`toggle_task`**: Mark a task as completed or reopen a finished one.
+* **`delete_task`**: Permanently remove a task from a list.
+
+### 2. Reminders Scheduling (`Reminders`)
+* **`list_reminders`**: Retrieve scheduled reminders, with optional status filtering (`pending`/`sent`).
+* **`create_reminder`**: Schedule a reminder with custom delivery channels (WhatsApp, Email, On-Site Notification, and Chatbot Alert).
+* **`delete_reminder`**: Cancel and delete a scheduled reminder.
+
+### 3. Health & Wellness Tracker (`Health & Wellness`)
+* **`get_health_log`**: Fetch the complete health dashboard log of a day (water, sleep, calories, weight, mood, notes, meals, and exercises).
+* **`log_water`**: Record or add water intake (ml) for a specific date.
+* **`log_calories`**: Record or add calorie consumption (kcal) for a specific date.
+* **`log_meal`**: Log a meal with a description, calories, and time (breakfast, lunch, dinner, etc.).
+* **`log_exercise`**: Log physical activity with duration, intensity, calories burned, and notes.
+* **`update_health_log`**: Modify general daily metrics like sleep hours, weight, mood rating, and daily notes.
+
+### 4. CRM Commercial Pipeline (`Leads & Customers`)
+* **`list_crm_customers`**: Fetch leads and customers registered in Lelly's CRM, with status filtering.
+* **`create_crm_customer`**: Register a new lead or customer with contact details (name, email, phone, company) and notes.
+
+### 5. Knowledge Base (`Knowledge Base`)
+* **`search_knowledge`**: Search through articles or notes stored in your Lelly Knowledge Base.
+* **`add_knowledge_item`**: Save a new article, note, or code snippet with a title, body, and custom tags.
+
+---
+
+## ⚙️ Installation & Configuration
+
+### 1. Prerequisites
+* Node.js (version 18 or higher) installed on your machine.
+
+### 2. Setup Project
+Clone this repository and set up a `.env` file containing your database credentials:
 
 ```bash
-# Clone o repositório
+# Clone the repository
 git clone git@github.com:robincoelho/lelly-mcp-server.git
 cd lelly-mcp-server
 
-# Instale as dependências
+# Install dependencies
 npm install
 ```
 
-Crie o arquivo `.env`:
+Create a `.env` file in the root directory:
 ```env
 DB_HOST=localhost
-DB_USER=seu_usuario_mysql
-DB_PASS=sua_senha_mysql
-DB_NAME=seu_banco_lelly
-USER_ID=11 # ID do usuário no banco Lelly.chat (padrão é 11)
+DB_USER=your_mysql_user
+DB_PASS=your_mysql_password
+DB_NAME=your_lelly_database
+USER_ID=11 # The user ID on your Lelly database (defaults to 11)
 ```
 
 ---
 
-## 🔌 Integração com Clientes de IA
+## 🔌 Connecting to AI Clients
 
 ### 1. Claude Code (CLI)
-Para carregar o servidor MCP no Claude Code, execute o comando especificando o caminho absoluto do servidor:
+Start Claude Code and load the Lelly MCP server by providing the absolute path to `index.js`:
 ```bash
-claude --mcp lelly=node,/caminho/absoluto/para/lelly-mcp-server/index.js
+claude --mcp lelly=node,/absolute/path/to/lelly-mcp-server/index.js
 ```
-*Substitua `/caminho/absoluto/para/` pelo diretório real em que o projeto foi clonado.*
+*(Make sure to replace `/absolute/path/to/` with your project's actual local folder path).*
 
 ### 2. Claude Desktop
-Abra o arquivo de configuração do seu Claude Desktop (geralmente em `~/Library/Application Support/Claude/claude_desktop_config.json` no Mac ou `%APPDATA%\Claude\claude_desktop_config.json` no Windows) e adicione o Lelly MCP na chave `mcpServers`:
+Open your Claude Desktop configuration file (located at `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS, or `%APPDATA%\Claude\claude_desktop_config.json` on Windows) and add the server to `mcpServers`:
 
 ```json
 {
   "mcpServers": {
     "lelly": {
       "command": "node",
-      "args": ["/caminho/absoluto/para/lelly-mcp-server/index.js"],
+      "args": ["/absolute/path/to/lelly-mcp-server/index.js"],
       "env": {
         "DB_HOST": "localhost",
-        "DB_USER": "seu_usuario_mysql",
-        "DB_PASS": "sua_senha_mysql",
-        "DB_NAME": "seu_banco_lelly",
+        "DB_USER": "your_mysql_user",
+        "DB_PASS": "your_mysql_password",
+        "DB_NAME": "your_lelly_database",
         "USER_ID": "11"
       }
     }
@@ -100,16 +100,16 @@ Abra o arquivo de configuração do seu Claude Desktop (geralmente em `~/Library
 ```
 
 ### 3. Cursor
-1. Abra as **Configurações** do Cursor (`Cursor Settings` -> `Features` -> `MCP`).
-2. Clique em **+ Add New MCP Server**.
-3. Configure:
+1. Go to **Cursor Settings** -> **Features** -> **MCP**.
+2. Click **+ Add New MCP Server**.
+3. Fill in the configuration:
    * **Name:** `Lelly`
    * **Type:** `stdio`
-   * **Command:** `node /caminho/absoluto/para/lelly-mcp-server/index.js`
-4. Clique em **Save**.
+   * **Command:** `node /absolute/path/to/lelly-mcp-server/index.js`
+4. Click **Save**.
 
 ---
 
-## 🔒 Licença
+## 🔒 License
 
-Este projeto está licenciado sob a licença MIT - consulte o arquivo [LICENSE](LICENSE) para obter detalhes.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
