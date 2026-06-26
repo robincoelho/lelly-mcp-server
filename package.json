@@ -1,0 +1,23 @@
+{
+  "name": "lelly-mcp-server",
+  "version": "1.0.0",
+  "description": "Model Context Protocol (MCP) server for Lelly.chat, allowing AI agents to interact with tasks, reminders, health tracking, and CRM.",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "lelly-mcp-server": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.1",
+    "dotenv": "^16.4.5",
+    "mysql2": "^3.11.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Robin Coelho",
+  "license": "MIT"
+}
