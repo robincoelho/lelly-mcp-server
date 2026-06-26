@@ -57,31 +57,47 @@ The MCP server exposes a rich set of database-driven tools for your AI agents:
 
 ---
 
-## ⚙️ Installation & Configuration
+## ⚙️ Operating Modes & Configuration
 
-### 1. Prerequisites
-* Node.js (version 18 or higher) installed on your machine.
+Lelly MCP Server can run in two different modes depending on your setup:
 
-### 2. Setup Project
-Clone this repository and set up a `.env` file containing your database credentials:
+### 1. Cloud Mode (SaaS - Recommended)
+If you are using the official hosted platform at **Lelly.chat**, you do not need to expose your database. The server will securely forward your tool requests to Lelly's secure public endpoint using a Developer API Key.
 
-```bash
-# Clone the repository
-git clone git@github.com:robincoelho/lelly-mcp-server.git
-cd lelly-mcp-server
-
-# Install dependencies
-npm install
+To enable **Cloud Mode**, configure the following environment variables:
+```env
+LELLY_API_URL=https://lelly.chat
+LELLY_API_KEY=sk_live_your_api_key_here
 ```
+*(You can generate your Developer API Key inside your dashboard settings on Lelly.chat).*
 
-Create a `.env` file in the root directory:
+### 2. Local Mode (Self-Hosted)
+If you run a self-hosted instance of Lelly or prefer to connect directly to your local MySQL database, configure your local database credentials instead:
 ```env
 DB_HOST=localhost
 DB_USER=your_mysql_user
 DB_PASS=your_mysql_password
 DB_NAME=your_lelly_database
-USER_ID=11 # The user ID on your Lelly database (defaults to 11)
+USER_ID=11 # The user ID on your local Lelly database (defaults to 11)
 ```
+
+---
+
+## 🚀 Setup & Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone git@github.com:robincoelho/lelly-mcp-server.git
+   cd lelly-mcp-server
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment:**
+   Create a `.env` file in the root folder and configure it using either **Cloud Mode** or **Local Mode** variables as described above.
 
 ---
 
@@ -95,8 +111,29 @@ claude --mcp lelly=node,/absolute/path/to/lelly-mcp-server/index.js
 *(Make sure to replace `/absolute/path/to/` with your project's actual local folder path).*
 
 ### 2. Claude Desktop
-Open your Claude Desktop configuration file (located at `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS, or `%APPDATA%\Claude\claude_desktop_config.json` on Windows) and add the server to `mcpServers`:
+Open your Claude Desktop configuration file:
+* **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+* **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
+Add the server to `mcpServers` using your preferred mode:
+
+**Example (Cloud Mode):**
+```json
+{
+  "mcpServers": {
+    "lelly": {
+      "command": "node",
+      "args": ["/absolute/path/to/lelly-mcp-server/index.js"],
+      "env": {
+        "LELLY_API_URL": "https://lelly.chat",
+        "LELLY_API_KEY": "sk_live_your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+**Example (Local Mode):**
 ```json
 {
   "mcpServers": {
@@ -123,6 +160,7 @@ Open your Claude Desktop configuration file (located at `~/Library/Application S
    * **Type:** `stdio`
    * **Command:** `node /absolute/path/to/lelly-mcp-server/index.js`
 4. Click **Save**.
+*(If you run Cursor, make sure to define the environment variables in a global `.env` file in the `lelly-mcp-server` directory).*
 
 ---
 

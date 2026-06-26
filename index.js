@@ -4,18 +4,32 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
-} from "@modelcontextprotocol/sdk/shared/protocols.js";
+} from "@modelcontextprotocol/sdk/types.js";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import db from "./db.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, ".env") });
 
 // ID do usuário padrão (pode ser configurado via variável de ambiente, padrão 11 para Robin)
 const USER_ID = process.env.USER_ID ? parseInt(process.env.USER_ID, 10) : 11;
+const LELLY_API_URL = process.env.LELLY_API_URL;
+const LELLY_API_KEY = process.env.LELLY_API_KEY;
+const isCloudMode = !!(LELLY_API_URL && LELLY_API_KEY);
 
-console.error(`[Lelly MCP] Inicializando para o USER_ID: ${USER_ID}`);
+if (isCloudMode) {
+  console.error(`[Lelly MCP] Inicializando no MODO NUVEM (SaaS API URL: ${LELLY_API_URL})`);
+} else {
+  console.error(`[Lelly MCP] Inicializando no MODO LOCAL (Self-Hosted USER_ID: ${USER_ID})`);
+}
 
 const server = new Server(
   {
     name: "lelly-mcp-server",
-    version: "1.1.0",
+    version: "1.2.0",
   },
   {
     capabilities: {
@@ -418,6 +432,48 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
   console.error(`[Lelly MCP] Chamando ferramenta: ${name} com args:`, args);
+
+  // Se estiver no MODO NUVEM, faz proxy da requisição via HTTP para o endpoint central PHP do Lelly.chat
+  if (isCloudMode) {
+    try {
+      const response = await fetch(`${LELLY_API_URL}/api/v1/mcp.php`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${LELLY_API_KEY}`
+        },
+        body: JSON.stringify({
+          action: name,
+          params: args
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errMsg = errorText;
+        try {
+          const errJson = JSON.parse(errorText);
+          errMsg = errJson.error || errJson.message || errorText;
+        } catch (e) {}
+        throw new Error(`API error (${response.status}): ${errMsg}`);
+      }
+
+      const resJson = await response.json();
+      if (!resJson.success) {
+        throw new Error(resJson.error || "Operação falhou no servidor em nuvem.");
+      }
+
+      return {
+        content: [{ type: "text", text: typeof resJson.data === "string" ? resJson.data : JSON.stringify(resJson.data, null, 2) }]
+      };
+    } catch (error) {
+      console.error(`[Lelly MCP] Erro na chamada Cloud API para ${name}:`, error);
+      return {
+        content: [{ type: "text", text: `Erro (Cloud API): ${error.message}` }],
+        isError: true,
+      };
+    }
+  }
 
   try {
     switch (name) {
